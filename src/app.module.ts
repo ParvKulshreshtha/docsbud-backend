@@ -3,9 +3,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DocumentModule } from './document/document.module';
 import { AiModule } from './ai/ai.module';
+import { ConfigModule } from '@nestjs/config';
+import { VectorDbModule } from './vector-db/vector-db.module';
 
 @Module({
-  imports: [DocumentModule, AiModule],
+  imports: [DocumentModule, AiModule, ConfigModule.forRoot({
+      isGlobal: true,
+    }), VectorDbModule,
+],
   controllers: [AppController],
   providers: [AppService],
 })

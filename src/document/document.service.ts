@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import OpenAI from 'openai';
 import { PDFParse } from 'pdf-parse';
+import { AiService } from 'src/ai/ai.service';
+
 @Injectable()
 export class DocumentService {
+  constructor(private aiService: AiService) {}
+
   async processPdf(fileBuffer: Buffer) {
     const text = await this.extractText(fileBuffer);
-    console.log(text)
     const cleanedText = this.cleanText(text);
-    console.log(cleanedText)
     const chunks = this.chunkText(cleanedText);
-    const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
+    const embeddings = await this.aiService.createEmbedding(chunks);
+    console.log(embeddings)
     return chunks;
   }
 
