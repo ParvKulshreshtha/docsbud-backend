@@ -22,10 +22,24 @@ export class AiService {
 
   async askLLM(prompt: string) {
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5-nano',
       messages: [{ role: 'user', content: prompt }],
     });
 
     return response.choices[0].message.content;
+  }
+
+  buildPrompt(context: string[], question: string) {
+    return `
+    You are a helpful AI assistant.
+
+    Use ONLY the context below to answer.
+
+    Context:
+    ${context.join('\n\n')}
+
+    Question:
+    ${question}
+    `;
   }
 }

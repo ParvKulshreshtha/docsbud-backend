@@ -1,17 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { PDFParse } from 'pdf-parse';
 import { AiService } from 'src/ai/ai.service';
+import { VectorDbService } from 'src/vector-db/vector-db.service';
 
 @Injectable()
 export class DocumentService {
-  constructor(private aiService: AiService) {}
+  constructor(
+    private aiService: AiService,
+    private vectorDbService: VectorDbService,
+  ) {}
 
   async processPdf(fileBuffer: Buffer) {
     const text = await this.extractText(fileBuffer);
     const cleanedText = this.cleanText(text);
     const chunks = this.chunkText(cleanedText);
     const embeddings = await this.aiService.createEmbedding(chunks);
-    console.log(embeddings)
+    await this.vectorDbService.storeEmbeddings(
+    chunks,
+    embeddings,
+    'user-123',
+    'doc-abc',
+  );
     return chunks;
   }
 
