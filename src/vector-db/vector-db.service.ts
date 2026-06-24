@@ -40,19 +40,37 @@ export class VectorDbService implements OnModuleInit {
     });
   }
 
-  async querySimilar(embedding: number[], userId: string, documentId: string) {
-  if (!this.collection) {
-    throw new Error('Collection not initialized');
+  async querySimilar(
+    embedding: number[],
+    userId: string,
+    documentId: string,
+    nResults: number,
+  ) {
+    if (!this.collection) {
+      throw new Error('Collection not initialized');
+    }
+
+    const result = await this.collection.query({
+      queryEmbeddings: [embedding],
+      nResults,
+      where: {
+        documentId,
+      },
+    });
+
+    return result.documents[0];
   }
 
-  const result = await this.collection.query({
-    queryEmbeddings: [embedding],
-    nResults: 5,
-    where: {
-      documentId,
-    },
-  });
+  async getChunkCount(documentId: string): Promise<number> {
+    if (!this.collection) {
+      throw new Error('Collection not initialized');
+    }
 
-  return result.documents[0]; // top chunks
-}
+    const result = await this.collection.get({
+      where: { documentId },
+      include: [],
+    });
+
+    return result.ids?.length ?? 0;
+  }
 }

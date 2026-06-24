@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import { PDFParse } from 'pdf-parse';
 import { AiService } from 'src/ai/ai.service';
 import { VectorDbService } from 'src/vector-db/vector-db.service';
@@ -11,17 +12,22 @@ export class DocumentService {
   ) {}
 
   async processPdf(fileBuffer: Buffer) {
+    const documentId = this.generateDocumentId();
     const text = await this.extractText(fileBuffer);
     const cleanedText = this.cleanText(text);
     const chunks = this.chunkText(cleanedText);
     const embeddings = await this.aiService.createEmbedding(chunks);
     await this.vectorDbService.storeEmbeddings(
-    chunks,
-    embeddings,
-    'user-123',
-    'doc-abc',
-  );
-    return chunks;
+      chunks,
+      embeddings,
+      'user-123',
+      documentId,
+    );
+    return { documentId, chunks };
+  }
+
+  private generateDocumentId(): string {
+    return String(randomInt(10_000_000, 100_000_000));
   }
 
   private async extractText(fileBuffer: Buffer) {
