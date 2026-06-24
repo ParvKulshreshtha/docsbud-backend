@@ -18,12 +18,13 @@ export class DocumentController {
       throw new BadRequestException('Only PDF allowed');
     }
 
-    const chunks = await this.documentService.processPdf(file.buffer);
+    const { documentId, chunks } = await this.documentService.processPdf(file.buffer);
 
-    return { 
+    return {
       message: 'File processed successfully',
+      documentId,
       chunksCount: chunks.length,
-      chunks 
+      chunks,
     };
   }
 }

@@ -1,18 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import OpenAI from 'openai';
+import { randomInt } from 'crypto';
 import { PDFParse } from 'pdf-parse';
+import { AiService } from 'src/ai/ai.service';
+import { VectorDbService } from 'src/vector-db/vector-db.service';
+
 @Injectable()
 export class DocumentService {
+  constructor(
+    private aiService: AiService,
+    private vectorDbService: VectorDbService,
+  ) {}
+
   async processPdf(fileBuffer: Buffer) {
+    const documentId = this.generateDocumentId();
     const text = await this.extractText(fileBuffer);
-    console.log(text)
     const cleanedText = this.cleanText(text);
-    console.log(cleanedText)
     const chunks = this.chunkText(cleanedText);
-    const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-    return chunks;
+    const embeddings = await this.aiService.createEmbedding(chunks);
+    await this.vectorDbService.storeEmbeddings(
+      chunks,
+      embeddings,
+      'user-123',
+      documentId,
+    );
+    return { documentId, chunks };
+  }
+
+  private generateDocumentId(): string {
+    return String(randomInt(10_000_000, 100_000_000));
   }
 
   private async extractText(fileBuffer: Buffer) {
