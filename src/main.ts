@@ -6,9 +6,8 @@ dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const corsOrigins = (process.env.CORS_ORIGIN ?? 'http://localhost:3000')
   app.enableCors({
-    origin: [corsOrigins],
+    origin: ['https://docbuddyparv.vercel.app','https://docsbud-frontend.vercel.app','http://localhost:3000'],
     credentials: true,
   });
   await app.listen(process.env.PORT ?? 8001);
